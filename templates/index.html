@@ -1,0 +1,319 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Task Manager</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', path='/style.css') }}">
+
+    <style>
+        /* HEADER IMAGE */
+
+        .hero {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 30px;
+        }
+
+        .hero-content {
+            flex: 1;
+        }
+
+        .hero-image-container {
+            flex: 0 0 40%;
+        }
+
+        .hero-image {
+            width: 100%;
+            height: 190px;
+            object-fit: cover;
+            border-radius: 15px;
+            display: block;
+        }
+
+        @media (max-width: 700px) {
+            .hero {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .hero-image-container {
+                width: 100%;
+            }
+
+            .hero-image {
+                height: 180px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- HEADER -->
+
+    <header class="hero">
+
+        <div class="hero-content">
+
+            <span class="eyebrow">PERSONAL PRODUCTIVITY</span>
+
+            <h1>Task Manager</h1>
+
+            <p>
+                Organize your work, manage your time
+                and achieve your daily goals.
+            </p>
+
+        </div>
+
+        <div class="hero-image-container">
+
+            <img
+                src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1000&q=85"
+                alt="Modern workspace with laptop"
+                class="hero-image"
+            >
+
+        </div>
+
+    </header>
+
+
+    <!-- STATISTICS -->
+
+    <section class="stats">
+
+        <div class="stat-card">
+            <p>Total Tasks</p>
+            <h2>{{ total }}</h2>
+        </div>
+
+        <div class="stat-card">
+            <p>Pending Tasks</p>
+            <h2>{{ pending }}</h2>
+        </div>
+
+        <div class="stat-card">
+            <p>Completed Tasks</p>
+            <h2>{{ completed }}</h2>
+        </div>
+
+    </section>
+
+
+    <!-- CREATE TASK -->
+
+    <section class="panel">
+
+        <h2>Create New Task</h2>
+
+        <p class="description">
+            Add your task and description.
+        </p>
+
+        <form action="/add" method="POST" class="add-form">
+
+            <div class="form-group">
+
+                <label>Task Title</label>
+
+                <input
+                    type="text"
+                    name="title"
+                    placeholder="Enter your task"
+                    maxlength="150"
+                    required
+                >
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Description</label>
+
+                <input
+                    type="text"
+                    name="description"
+                    placeholder="Enter task description"
+                    maxlength="500"
+                >
+
+            </div>
+
+            <button type="submit" class="primary-btn">
+                + Add Task
+            </button>
+
+        </form>
+
+    </section>
+
+
+    <!-- MY TASKS -->
+
+    <section class="panel">
+
+        <div class="list-header">
+
+            <div>
+
+                <h2>My Tasks</h2>
+
+                <p class="description">
+                    Manage your daily activities.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        {% if tasks %}
+
+            {% for task in tasks %}
+
+            <div class="task-card">
+
+                <div class="task-details">
+
+                    <h3 class="{% if task.completed %}task-completed{% endif %}">
+                        {{ task.title }}
+                    </h3>
+
+                    <p class="due-date">
+                        {{ task.description or 'No description' }}
+                    </p>
+
+                    {% if task.completed %}
+
+                        <span class="badge completed-badge">
+                            Completed
+                        </span>
+
+                    {% else %}
+
+                        <span class="badge pending-badge">
+                            Pending
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- TASK ACTIONS -->
+
+                <div class="task-actions">
+
+                    <!-- COMPLETE / UNDO -->
+
+                    <form action="/complete/{{ task.id }}" method="POST">
+
+                        <button type="submit" class="complete-btn">
+
+                            {% if task.completed %}
+                                Undo
+                            {% else %}
+                                Complete
+                            {% endif %}
+
+                        </button>
+
+                    </form>
+
+
+                    <!-- EDIT -->
+
+                    <details class="edit-details">
+
+                        <summary class="edit-btn">
+                            Edit
+                        </summary>
+
+                        <form
+                            action="/edit/{{ task.id }}"
+                            method="POST"
+                            class="edit-form"
+                        >
+
+                            <label>Task Title</label>
+
+                            <input
+                                type="text"
+                                name="title"
+                                value="{{ task.title }}"
+                                maxlength="150"
+                                required
+                            >
+
+                            <label>Description</label>
+
+                            <input
+                                type="text"
+                                name="description"
+                                value="{{ task.description or '' }}"
+                                maxlength="500"
+                            >
+
+                            <button type="submit" class="primary-btn">
+                                Save Changes
+                            </button>
+
+                        </form>
+
+                    </details>
+
+
+                    <!-- DELETE -->
+
+                    <form
+                        action="/delete/{{ task.id }}"
+                        method="POST"
+                    >
+
+                        <button type="submit" class="delete-btn">
+                            Delete
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <div class="empty-state">
+
+                <h3>No tasks found</h3>
+
+                <p>Add a new task to get started.</p>
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- FOOTER -->
+
+    <footer>
+        Task Manager | Built with FastAPI and MySQL
+    </footer>
+
+</div>
+
+</body>
+</html>
